@@ -11,10 +11,13 @@
 		useCache:boolean 是否使用页面缓存。请注意，仅仅在只有浏览器支持canvas时才使用缓存。
 		cache:自定义的缓存工厂对象。用户可以自己定义页面缓存工厂。但是需要实现set(k,v)与get(k)方法。
 ##示例
+
 	$(document).ready(function(){ImgBrowser.attach("body");});
 或者
+
 	$(document).ready(function(){ImgBrowser.attach("body",true);});
 或者
+
 	$(document).ready(function(){ImgBrowser.attach("body",true,{set:function(k,v){},get:function(k){}});});
 使用延时加载需要在img元素中使用url/href/_data_image_中的任意一个设置图片地址。如：
 	<img src="blank.png" url="/xx/20141118/uid-104512-qh123456.png"/>
