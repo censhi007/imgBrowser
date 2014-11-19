@@ -20,5 +20,6 @@
 
 	$(document).ready(function(){ImgBrowser.attach("body",true,{set:function(k,v){},get:function(k){}});});
 使用延时加载需要在img元素中使用url/href/_data_image_中的任意一个设置图片地址。如：
+
 	<img src="blank.png" url="/xx/20141118/uid-104512-qh123456.png"/>
 其中blank.png是在url指定的图片没有加载完成时显示的图像。
