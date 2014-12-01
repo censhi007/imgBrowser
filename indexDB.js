@@ -79,6 +79,7 @@
 				return;
 			}
 			var tableName=p.tableName||this._dbName;
+			delete p.tableName
 			var result=null;
 			var trans = this.db.transaction([tableName], "readonly");
 			var store = trans.objectStore(tableName);
@@ -94,8 +95,21 @@
 				var req=request.result
 				var flag=0;
 				if (req){
+					var isTre=true;					
 					if(typeof p.success === "function"){
-						p.success.apply(this,[req.value]);
+						var d = req.value;
+						for(var oi in p){
+							if(p.hasOwnProperty(oi) && typeof p[oi]!=="function" && d.hasOwnProperty(oi)){
+								if(req[oi]!=p[oi]){
+									isTre=false;
+									break;
+								}								
+							}
+						}
+						if(isTre){
+							p.success.apply(this,[d]);
+						}
+						
 					}
 					req.continue();
 				}else{
