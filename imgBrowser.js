@@ -28,12 +28,17 @@
 					}
 				}
 				if(html5){
-					//缓存
-					var imd = ib.get(data);
+					var pm = {};
 					var date = new Date();
 					var todaysDate = (date.getMonth() + 1).toString() + date.getDate().toString();
-					if(!imd){
-						var  iig = $("<img/>");
+					pm['url']=data;
+					pm.success=function(imd){
+						img.attr("src",imd.img);
+						img.attr("_data_width_",imd.width);
+						img.attr("_data_height_",imd.height);						
+					}
+					pm.error=function(){
+						var  iig = $("<img/>");						
 						iig.hide();
 						iig.appendTo(document.body).bind("load",function(){
 							var imgCanvas = document.createElement("canvas"),
@@ -47,17 +52,20 @@
 								width:imgCanvas.width,
 								height:imgCanvas.height
 							}
-							ib.store(data,imd);
+							var ppm={};
+							ppm['url']=data;
+							ppm['data']=imd;
+							ppm['success']=function(){}
+							ppm['error']=function(){}
+							ib.store(ppm);
 							iig.remove();							
 							img.attr("src",imd.img);
 							img.attr("_data_width_",imd.width);
 							img.attr("_data_height_",imd.height);
 						}).attr("src",data);
-					}else{
-						img.attr("src",imd.img);
-						img.attr("_data_width_",imd.width);
-						img.attr("_data_height_",imd.height);					
 					}
+					//缓存
+					ib.get(pm);
 				}else{
 					var src = img.attr("src");
 					if(src != data){
@@ -78,36 +86,84 @@
 			}).mousemove(function(e){
 				ib.show(this,e,true);
 			});
-		},store:function(k,v){
+		},store:function(k){
+			k=k||{};
+			var _suc = typeof k.success==="string"?win[k.success]:k.success;
+			var _err = typeof k.error==="string"?win[k.error]:k.error;
+			k.success=function(){
+				if(typeof _suc === "function"){
+					_suc.apply(k,[]);
+				}
+			}
+			k.error=function(){			
+				if(typeof _suc === "function"){
+					_err.apply(k,[]);
+				}
+			}
+			if(this.cache.isSetted()){
+				this.cache.store(k);
+				return;
+			}
+			var v=k.data;
+			var pk=k[atypeName];
 			try{
 				v=JSON.stringify(v)
 			}catch(e){
 				v=stringify(v)
 			}
-			v=encodeURI(encodeURI(v));
-			if(this.cache.isSetted()){
-				this.cache.store(k,v);
-			}else if(window.localStorage){
-				window.localStorage.setItem(k,v)
-			}else{
-				var Days=180;
-				var exp=new Date();
-				exp.setTime(exp.getTime()+Days*24*60*60*1000);
-				document.cookie=k+"="+escape(v)+";expires="+exp.toGMTString()
+			try{
+				v=encodeURI(encodeURI(v));
+				if(window.localStorage){
+					window.localStorage.setItem(pk,v)
+				}else{
+					var Days=180;
+					var exp=new Date();
+					exp.setTime(exp.getTime()+Days*24*60*60*1000);
+					document.cookie=pk+"="+escape(v)+";expires="+exp.toGMTString()
+				}
+				k.success.apply(k,[]);
+			}catch(ee){
+				k.error.apply(k,[]);
 			}
 		},get:function(k){
+			k=k||{};
+			var _suc = typeof k.success==="string"?win[k.success]:k.success;
+			var _err = typeof k.error==="string"?win[k.error]:k.error;
+			k.success=function(rv){
+				rv=rv||{};
+				var data = rv.data;
+				if(data===null || data===""){
+					if(typeof _err === "function"){
+						_err.apply(k,[data]);
+					}
+					return;					
+				}
+				if(typeof _suc === "function"){
+					_suc.apply(k,[data]);
+				}
+			}
+			k.error=function(rv){			
+				if(typeof _suc === "function"){
+					_err.apply(k,arguments);
+				}
+			}
 			var v=null;
 			if(this.cache.isSetted()){
-				v = this.cache.get(k);
-			}else if(window.localStorage){
-				v=window.localStorage.getItem(k)
+				this.cache.get(k);
+				return;
+			}else if(window.localStorage){				
+				v=window.localStorage.getItem(k);
+				
 			}else{
 				var arr=document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
 				if(arr){
 					v=arr[2]
 				}
 			}
-			if(v===null||v===""){return v}
+			if(v===null||v===""){
+				k.error.apply(k,[{data:v}]);
+				return;
+			}
 			v=decodeURI(decodeURI(v));
 			try{
 				v=JSON.parse(v)
@@ -115,9 +171,11 @@
 				try{
 					v=eval("("+v+")");
 				}catch(ee){
-					return null;
+					k.error.apply(k,[{data:v}]);
+					return;
 				}
 			}
+			k.success.apply(k,[{data:v}]);
 			return v;
 		},show:function(img,e,mov){
 			var el = this.el;
@@ -243,49 +301,6 @@
 		},hide:function(){
 			this._in_=false;
 			this.el.hide();
-		},indexDBSupported:function(){
-			if(typeof this._indexDB_Support_ != "undefined"){
-				return this._indexDB_Support_;
-			}
-			this._indexDB_Support_ = win.indexedDB || win.webkitIndexedDB ||win.mozIndexedDB;
-			if("webkitIndexedDB" in win){
-				win.IDBTransaction = win.webkitIDBTransaction;
-                win.IDBKeyRange = win.webkitIDBKeyRange;
-			}
-			if(this._indexDB_Support_){
-				//init the base
-				var imb = this;
-				this._db=(function(){
-					var dbName = "_image_browser_"; //数据库名称
-					var dbVersion = 1.0;
-					var db = imb._indexDB_Support_;
-					var that ={
-						log:function(msg){console.log(msg);},
-						onerror:function(e){console.debug(e);},
-						db:null,
-						open:function(){
-							this.db = db.open(dbName,dbVersion);	
-							this.db = this.db.result;
-						},get:function(tabkeName,key){
-							var trans = this.db.transaction([tabkeName], "readwrite");
-							
-						},store:function(tableName,obj){
-							var trans = this.db.transaction([tableName], "readwrite");
-							var store = trans.objectStore(tableName);
-							var request = store.put(obj);
-							request.onsuccess = function (e) {
-							 }
-							request.onerror = function (e) {console.debug(e);}
-						},init:function(){
-							this.db.createObjectStore(atypeName, { keyPath: "url" });
-						}
-						
-					}
-					return that;
-				})();
-				this._db.open();
-			}
-			return this._indexDB_Support_;
 		},cache:(function(){
 			var cache={};
 			return {
@@ -293,10 +308,10 @@
 					cache.fact = e;
 				},isSetted:function(){return !(!cache.fact);}
 				,store:function(k,v){
-					if(cache.fact&&cache.fact.set)cache.fact.set(k,v);
+					if(cache.fact&&cache.fact.set)cache.fact.set.apply(cache.fact,arguments);
 					else console.debug("have no fitted factory!");
 				},get:function(k){
-					if(cache.fact&&cache.fact.get)return cache.fact.get(k);
+					if(cache.fact&&cache.fact.get)return cache.fact.get.apply(cache.fact,arguments);
 					return null;
 				}
 			}
