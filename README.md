@@ -73,13 +73,12 @@
 依赖于jQuery，用于元素创建、定位查找以及事件绑定。若能有其他实现此功能的插件，亦可。
 ##调用接口
 
-	$is(selector,engin);
+	$is(o);
 或这
 	
-	imageShow(selector,engin);
+	imageShow(o);
 	参数解释：
-		selector:string/DOM 用于jQuery定位元素。加载后，将查找该元素下所有的img元素，并进行初始化。
-		engin:string 用于指定渲染引擎，默认指定css3，在指定引擎不可用时，按引擎实现顺序自动取用第一个可用引擎。
+		o:string/Object 如果是string用于jQuery定位元素。如果是object，请传入{el:...},其中el指定dom元素。mode指定旋转引擎(字符串)。oper指定img的触发事件。
 
 ##其他功能
 当前js中默认带有三个引擎filters/css3/canvas。你也可以自己实现其他的引擎，同样你也可以去掉自带的引擎。引擎使用继承方法实现。下面是对canvas引擎的解释。请注意引擎按实现顺序自动调用可用的引擎，因此如果需要指定引擎请在调用接口时传入参数，
