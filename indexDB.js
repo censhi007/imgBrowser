@@ -3,8 +3,8 @@
 	var $ib = win.indexedDB || win.webkitIndexedDB ||win.mozIndexedDB;
 	win['console']=win['console']||{debug:function(){}};
 	if("webkitIndexedDB" in win){
-		win.IDBTransaction = win.webkitIDBTransaction;
-        win.IDBKeyRange = win.webkitIDBKeyRange;
+		win.IDBTransaction = win.IDBTransaction||win.webkitIDBTransaction;
+        win.IDBKeyRange =win.IDBKeyRange||win.webkitIDBKeyRange;
 	}	
 	var db = {
 		dName:"defaultName",
