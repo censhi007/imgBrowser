@@ -40,6 +40,7 @@
 					pm.error=function(){
 						var  iig = $("<img/>");						
 						iig.hide();
+						iig.attr("crossOrigin","*");						
 						iig.appendTo(document.body).bind("load",function(){
 							var imgCanvas = document.createElement("canvas"),
 							imgContext = imgCanvas.getContext("2d");
