@@ -1,5 +1,14 @@
 (function(){
 	var win = window;
+	var userAgent = navigator.userAgent.toLowerCase();
+    // Figure out what browser is being used 
+    var browser = {
+        version: (userAgent.match(/.+(?:rv|it|ra|ie)[\/: ]([\d.]+)/) || [])[1],
+        safari: /webkit/.test(userAgent),
+        opera: /opera/.test(userAgent),
+        msie: /msie/.test(userAgent) && !/opera/.test(userAgent),
+        mozilla: /mozilla/.test(userAgent) && !/(compatible|webkit)/.test(userAgent)
+    }; 
 	win['console']=win['console']||{log:function(){},debug:function(){}};
 	var atypeName = "_data_image_";
 	win['ImgBrowser']={
@@ -38,9 +47,9 @@
 						img.attr("_data_height_",imd.height);						
 					}
 					pm.error=function(){
-						var  iig = $("<img/>");						
-						iig.hide();
+						var  iig = $("<img/>");		
 						iig.attr("crossOrigin","*");						
+						iig.hide();
 						iig.appendTo(document.body).bind("load",function(){
 							var imgCanvas = document.createElement("canvas"),
 							imgContext = imgCanvas.getContext("2d");
@@ -247,7 +256,8 @@
 			//console.log(atr);
 			this.fresh();
 		},draw:function(){
-			this.el = $("<div style='display:none;position:fixed;z-index:50000;max-height:100%;filter: alpha(opacity=100);-moz-opacity: 1;opacity: 1;background-color:#fff;'/>").append($("<img/>").css("margin","5px"));
+			var position=browser.msie&&browser.version<=7 ? "absolute" : "fixed";
+			this.el = $("<div style='display:none;_position:absolute;_bottom:auto;_top:expression(eval(document.documentElement.scrollTop+document.documentElement.clientHeight-this.offsetHeight-(parseInt(this.currentStyle.marginTop,10)||0)-(parseInt(this.currentStyle.marginBottom,10)||0)));position:"+position+";z-index:50000;max-height:100%;filter: alpha(opacity=100);-moz-opacity: 1;opacity: 1;background-color:#fff;'/>").append($("<img/>").css("margin","5px"));
 			var el = this.el;
 			this.el.children("img").bind("load",function(){
 				var th = $(this);
