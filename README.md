@@ -1,6 +1,7 @@
 ##下载地址
 	git clone git@github.com:censhi007/imgBrowser
 or
+	
 	git clone git://github.com/censhi007/imgBrowser
 #imgBrowser[图片放大镜]
 ===========
