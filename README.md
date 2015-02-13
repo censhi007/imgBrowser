@@ -180,3 +180,16 @@
 	 });
 
 自定义引擎必须实现show以及supportInBrowser方法，如果引擎需要额外的参数支持，请实现initElement和desElement方法。
+
+#editor[文本编辑器]
+===========
+##功能描述
+当鼠标过图片(img元素)时，在鼠标附近显示原始大小的图片。如果图片超过了窗口大小，那么等比例缩放。
+##依赖
+依赖于jQuery，用于元素创建、定位查找以及事件绑定。若能有其他实现此功能的插件，亦可。
+##调用接口
+	$editor(selector);
+	参数解释：
+		selector:dom定位属性，用于jQuery定位。编辑器将在该dom位置并以该dom大小渲染。
+##示例
+	$editor("#container");
