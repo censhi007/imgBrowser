@@ -1,5 +1,14 @@
 (function(){
  var win = window; 
+ 	var userAgent = navigator.userAgent.toLowerCase();
+    // Figure out what browser is being used 
+    var browser = {
+        version: (userAgent.match(/.+(?:rv|it|ra|ie)[\/: ]([\d.]+)/) || [])[1],
+        safari: /webkit/.test(userAgent),
+        opera: /opera/.test(userAgent),
+        msie: /msie/.test(userAgent) && !/opera/.test(userAgent),
+        mozilla: /mozilla/.test(userAgent) && !/(compatible|webkit)/.test(userAgent)
+    }; 
  /***
   * 原始基类.所有类的顶级父类
   */
@@ -177,16 +186,17 @@
             M21: s * x, M22: c * y
         };
 	},
-	uid:function(len){
-		/**返回一串uuid，内部函数*/
-		var xs = "abcdefghijklmnopqrstuvwxyz0123456789-_";
-		var size =xs.length;
-		var res="";
-		
-		while(len-- >0)
-			res+=(xs[Math.floor(Math.random()*size)]);
-		return res;
-	},
+	uid:function(length){
+		var uuidpart = "";
+		for (var i=0; i<length; i++) {
+			var uuidchar = parseInt((Math.random() * 256), 10).toString(16);
+			if (uuidchar.length == 1) {
+				uuidchar = "0" + uuidchar;
+			}
+			uuidpart += uuidchar;
+		}
+    return uuidpart;
+},
 	/*初始化对象，如果某图片要使用本引擎，应该先调用本初始化函数，使对象支持本功能*/
 	initElement:function(o){
 		o=o||{};
@@ -557,14 +567,15 @@
 		});
 	},DrawContainer:function(){
 		var that = this;
-		var tpd = this.container = $("<div class='_top_div_Image_Rotate_' style='width:100%;height:100%;display:none;z-index:10000;position:fixed;top:0px;left:0px;overflow:hide;margin:0px;padding:0px;border:none;'/>").appendTo("body");
-		$("<div class='_sencod_div_Image_cover_' style='width:100%;height:100%;position:fixed;display:inline-block;filter: alpha(opacity=45);-moz-opacity: 0.45;opacity: 0.45;background-color:#000;'/>").appendTo(tpd);
+		var position=browser.msie&&browser.version<=7 ? "absolute" : "fixed";
+		var tpd = this.container = $("<div class='_top_div_Image_Rotate_' style='width:100%;height:100%;display:none;z-index:10000;position:"+position+";top:0px;left:0px;overflow:hide;margin:0px;padding:0px;border:none;'/>").appendTo("body");
+		$("<div class='_sencod_div_Image_cover_' style='width:100%;height:100%;position:"+position+";display:inline-block;filter: alpha(opacity=45);-moz-opacity: 0.45;opacity: 0.45;background-color:#000;'/>").appendTo(tpd);
 		var w = tpd.width();
 		var h = tpd.height();
 		var left = w*0.1;
 		var container = $("<div class='_container_div_Image_Rotate_' style='z-index:10050;top:28px;position:absolute;width:75%;height:"+(h-30)+"px;display:inline-block;'/>").css("left",left+"px").appendTo(tpd);
 		var tb = $("<div class='_tool_bar_Image_div_'  style='z-index:10050;width:75%;height:25px;position:absolute;display:inline-block;border:1px solid grey;background-color:#fff;text-align:center;'/>").css("left",left+"px").appendTo(tpd);
-		$("<div />").append("<span class='_image_show_but _image_roate_left_' style='width:75px;cursor:pointer;height:100%;display:inline-block;' direction='left' >向左旋转</div>").append("<span class='_image_show_but _image_roate_right_' style='width:75px;cursor:pointer;height:100%;display:inline-block;' direction='right' >向右旋转</div>").append("<span class='_image_show_but _image_roate_close_' style='width:75px;cursor:pointer;height:100%;display:inline-block;' direction='close' >关闭</div>").appendTo(tb).find("._image_show_but").click(function(){
+		$("<div />").append("<span class='_image_show_but _image_roate_left_' style='width:75px;cursor:pointer;height:100%;display:inline-block;' direction='left' >向左旋转</span>").append("<span class='_image_show_but _image_roate_right_' style='width:75px;cursor:pointer;height:100%;display:inline-block;' direction='right' >向右旋转</span>").append("<span class='_image_show_but _image_roate_close_' style='width:75px;cursor:pointer;height:100%;display:inline-block;' direction='close' >关闭</span>").appendTo(tb).find("._image_show_but").click(function(){
 			that.but_click(this);
 		});
 		
